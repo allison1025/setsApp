@@ -40,7 +40,7 @@ public class ForceItem implements Cloneable {
     }
     
     /** The mass value of this ForceItem. */
-    public float   mass;
+    public float mass;
     /** The values of the forces acting on this ForceItem. */
     public float[] force;
     /** The velocity values of this ForceItem. */
