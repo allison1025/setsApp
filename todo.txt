@@ -1,3 +1,7 @@
+Layout improvements:
+-- Avoid overlaps
+-- Provide geometric constraints
+
 Essential features:
 
 - Set context menu with the following items:
