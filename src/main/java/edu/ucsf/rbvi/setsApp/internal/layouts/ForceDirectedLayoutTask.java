@@ -61,6 +61,9 @@ public class ForceDirectedLayoutTask extends AbstractTask {
 				item.mass = (float) settings.nodeMass;
 				item.location[0] = 0f;
 				item.location[1] = 0f;
+				
+				item.dimension[0] = 0f;
+				item.dimension[1] = 0f;
 				sim.addItem(item);
 				items.put(node, item);
 			}
