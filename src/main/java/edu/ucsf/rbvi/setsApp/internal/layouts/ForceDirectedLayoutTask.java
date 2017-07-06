@@ -62,8 +62,8 @@ public class ForceDirectedLayoutTask extends AbstractTask {
 				item.location[0] = 0f;
 				item.location[1] = 0f;
 				
-				item.dimension[0] = 0f;
-				item.dimension[1] = 0f;
+				item.dimensions[0] = 0f;
+				item.dimensions[1] = 0f;
 				sim.addItem(item);
 				items.put(node, item);
 			}

@@ -19,7 +19,7 @@ public class ForceItem implements Cloneable {
         plocation = new float[] { 0.f, 0.f };
         k = new float[4][2];
         l = new float[4][2];
-        dimension = new float[]{0.f, 0.f};
+        dimensions = new float[]{0.f, 0.f};
     }
     
     /**
@@ -33,7 +33,7 @@ public class ForceItem implements Cloneable {
         System.arraycopy(velocity,0,item.velocity,0,2);
         System.arraycopy(location,0,item.location,0,2);
         System.arraycopy(plocation,0,item.plocation,0,2);
-        System.arraycopy(dimension,0,item.dimension,0,2); //clone dimension 
+        System.arraycopy(dimensions,0,item.dimensions,0,2); //clone dimension 
         for ( int i=0; i<k.length; ++i ) {
             System.arraycopy(k[i],0,item.k[i],0,2);
             System.arraycopy(l[i],0,item.l[i],0,2);
@@ -56,7 +56,7 @@ public class ForceItem implements Cloneable {
     /** Temporary variables for Runge-Kutta integration */
     public float[][] l;
     
-    public float[] dimension;
+    public float[] dimensions;
     
     /**
      * Checks a ForceItem to make sure its values are all valid numbers
@@ -69,7 +69,7 @@ public class ForceItem implements Cloneable {
           !( Float.isNaN(item.location[0])  || Float.isNaN(item.location[1])  || 
              Float.isNaN(item.plocation[0]) || Float.isNaN(item.plocation[1]) ||
              Float.isNaN(item.velocity[0])  || Float.isNaN(item.velocity[1])  ||
-             Float.isNaN(item.dimension[0]) || Float.isNaN(item.dimension[1]) ||
+             Float.isNaN(item.dimensions[0]) || Float.isNaN(item.dimensions[1]) ||
              Float.isNaN(item.force[0])     || Float.isNaN(item.force[1]) );
     }
     
