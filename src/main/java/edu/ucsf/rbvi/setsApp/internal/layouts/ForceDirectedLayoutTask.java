@@ -116,33 +116,4 @@ public class ForceDirectedLayoutTask extends AbstractTask {
 		netView.fitContent();
 		netView.updateView();
 	}
-	
-	public static boolean isOverlapping(View<CyNode> nodeView1, View<CyNode> nodeView2) {
-		double x1 = nodeView1.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
-		double x2 = nodeView2.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
-		double y1 = nodeView1.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-		double y2 = nodeView2.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-		
-		double dx = x2 - x1;
-		double dy = y2 - y1;
-		double dr = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-		double theta = Math.atan(dy / dx);
-		double vector1 = 0.0;
-		double vector2 = 0.0;
-		
-		double height1 = nodeView1.getVisualProperty(BasicVisualLexicon.NODE_HEIGHT) / 2;
-		double height2 = nodeView2.getVisualProperty(BasicVisualLexicon.NODE_HEIGHT) / 2;
-		
-		if(Math.abs(dy) > height1) {
-			vector1 = height1 / Math.sin(theta);
-			vector2 = height2 / Math.sin(theta);
-		} else {
-			vector1 = height1 / Math.cos(theta);
-			vector2 = height2 / Math.cos(theta);
-		}
-		
-		if(Math.abs(vector1 + vector2) < dr)
-			return true;
-		return false;
-	}
 }
