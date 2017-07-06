@@ -48,6 +48,7 @@ public class ForceDirectedLayoutTask extends AbstractTask {
 		sim.addForce(new DragForce());
 
 		final CyNetwork network = netView.getModel();
+		final Collection<View<CyNode>> nodeViews = netView.getNodeViews();
 		final List<Set<CyNode>> sets = setsMgr.getSetsFor(netView.getModel(), CyNode.class);
 
 		// create force items for each node
@@ -57,14 +58,19 @@ public class ForceDirectedLayoutTask extends AbstractTask {
 				if (items.containsKey(node)) {
 					continue;
 				}
+				View<CyNode> nodeView = netView.getNodeView(node);
 				final ForceItem item = new ForceItem();
+				System.out.println("ffffffff");
 				item.mass = (float) settings.nodeMass;
 				item.location[0] = 0f;
 				item.location[1] = 0f;
 				
-				item.dimensions[0] = 0f;
-				item.dimensions[1] = 0f;
+				double width = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH) / 2;
+				double height = nodeView.getVisualProperty(BasicVisualLexicon.NODE_HEIGHT) / 2;
+				item.dimensions[0] = (float) width;
+				item.dimensions[1] = (float) height;
 				sim.addItem(item);
+				System.out.println("ffffffff");
 				items.put(node, item);
 			}
 		}
