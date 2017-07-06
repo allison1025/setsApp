@@ -5,6 +5,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
 
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+
 /**
  * <p>Force function which computes an n-body force such as gravity,
  * anti-gravity, or the results of electric charges. This function implements
@@ -272,6 +276,7 @@ public class NBodyForce extends AbstractForce {
         float dx = n.com[0] - item.location[0];
         float dy = n.com[1] - item.location[1];
         float r  = (float)Math.sqrt(dx*dx+dy*dy);
+        boolean overlaps = isOverlapping(dx, dy, r, item, n.value);
         boolean same = false;
         if ( r == 0.0f ) {
             // if items are in the exact same place, add some noise
@@ -285,7 +290,9 @@ public class NBodyForce extends AbstractForce {
         // the Barnes-Hut approximation criteria is if the ratio of the
         // size of the quadtree box to the distance between the point and
         // the box's center of mass is beneath some threshold theta.
-        if ( (!n.hasChildren && n.value != item) || 
+        if(!overlaps) {
+        	if ( (!n.hasChildren && n.value != item) || 
+        
              (!same && (x2-x1)/r < params[BARNES_HUT_THETA]) ) 
         {
             if ( minDist ) return;
@@ -314,7 +321,29 @@ public class NBodyForce extends AbstractForce {
                 item.force[1] += v*dy;
             }
         }
+        } else {
+        	item.force[0] = dx * 10000;
+        	item.force[1] = dy * 10000;
+        }
     }
+    
+    public static boolean isOverlapping(float dx, float dy, float r, 
+    		ForceItem item1, ForceItem item2) {
+		double width1 = item1.dimensions[0], width2 = item2.dimensions[0];
+		double height1 = item1.dimensions[1], height2 = item2.dimensions[1];
+		
+		double theta = Math.atan(dy / dx);
+		double vector = 0.0;
+		
+		if(Math.abs(dy) > height1) 
+			vector = (height1 + height2) / Math.sin(theta);
+		else 
+			vector = (width1 + width2) / Math.cos(theta);
+		
+		if(Math.abs(vector) < r)
+			return true;
+		return false;
+	}
 
     /**
      * Represents a node in the quadtree.
