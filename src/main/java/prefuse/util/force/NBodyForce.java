@@ -5,10 +5,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
 
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-
 /**
  * <p>Force function which computes an n-body force such as gravity,
  * anti-gravity, or the results of electric charges. This function implements
@@ -276,13 +272,6 @@ public class NBodyForce extends AbstractForce {
 		float dx = n.com[0] - item.location[0];
 		float dy = n.com[1] - item.location[1];
 		float r  = (float)Math.sqrt(dx*dx+dy*dy);
-		if(Math.abs(item.force[0]) > 100000) {
-			item.force[0] -= -dx * 100000000;
-			item.force[1] -= -dy * 100000000;
-		}
-		boolean overlaps = false;
-		if(n.value != null)
-			overlaps = isOverlapping(item, n.value);
 		boolean same = false;
 		if ( r == 0.0f ) {
 			// if items are in the exact same place, add some noise
@@ -291,65 +280,61 @@ public class NBodyForce extends AbstractForce {
 			r  = (float)Math.sqrt(dx*dx+dy*dy);
 			same = true;
 		}
-		boolean minDist = params[MIN_DISTANCE]>0f && r>params[MIN_DISTANCE];
+		float sideLength1 = 0f;
+		float sideLength2 = 0f;
+		float vectorLength1 = 0f;
+		float vectorLength2 = 0f;
+		boolean minDist = false;
+		
+		if(n.value != item && n.value != null && item != null) {
+			sideLength1 = (float)(Math.abs(dy / dx) > item.dimensions[1] / item.dimensions[0] ? 
+					item.dimensions[1] : item.dimensions[0]);
+			sideLength2 = (float)(Math.abs(dy / dx) > n.value.dimensions[1] / n.value.dimensions[0] ? 
+					n.value.dimensions[1] : n.value.dimensions[0]);
+			vectorLength1 = (float) (sideLength1 / (sideLength1 == item.dimensions[1] ? 
+					Math.abs(Math.sin(Math.atan(dy / dx))) : Math.abs(Math.cos(Math.atan(dy / dx)))));
+			vectorLength2 = (float) (sideLength2 / (sideLength2 == n.value.dimensions[1] ? 
+					Math.abs(Math.sin(Math.atan(dy / dx))) : Math.abs(Math.cos(Math.atan(dy / dx)))));
+			minDist = (double)r < (double)(vectorLength1 + vectorLength2);
+			System.out.println(sideLength1 + " is sidelength1, " + sideLength2 + 
+					" is sidelength2, " + vectorLength1 + " is vectorlength1, " + 
+					vectorLength2 + " is vectorlength2, " + " but r is " + r
+					+ " and so minDist is... " + minDist);
+		}
 
 		// the Barnes-Hut approximation criteria is if the ratio of the
 		// size of the quadtree box to the distance between the point and
 		// the box's center of mass is beneath some threshold theta.
-		System.out.println(overlaps);
-		if(!overlaps) {
-			if ( (!n.hasChildren && n.value != item) || 
+		if ( (!n.hasChildren && n.value != item) || 
+				(!same && (x2-x1)/r < params[BARNES_HUT_THETA]) ) 
+		{
+			if ( minDist ) return;
+			// either only 1 particle or we meet criteria
+			// for Barnes-Hut approximation, so calc force
+			float v = params[GRAVITATIONAL_CONST]*item.mass*n.mass 
+					/ (r*r*r);
+			item.force[0] += v*dx;
+			item.force[1] += v*dy;
+		} else if ( n.hasChildren ) {
+			// recurse for more accurate calculation
+			float splitx = (x1+x2)/2;
+			float splity = (y1+y2)/2;
+			for ( int i=0; i<n.children.length; i++ ) {
+				if ( n.children[i] != null ) {
+					forceHelper(item, n.children[i],
+							(i==1||i==3?splitx:x1), (i>1?splity:y1),
+							(i==1||i==3?x2:splitx), (i>1?y2:splity));
+				}
+			}
+			if ( minDist ) return;
+			if ( n.value != null && n.value != item ) {
 
-					(!same && (x2-x1)/r < params[BARNES_HUT_THETA]) ) 
-			{
-				if ( minDist ) return;
-				// either only 1 particle or we meet criteria
-				// for Barnes-Hut approximation, so calc force
-				float v = params[GRAVITATIONAL_CONST]*item.mass*n.mass 
+				float v = params[GRAVITATIONAL_CONST]*item.mass*n.value.mass
 						/ (r*r*r);
 				item.force[0] += v*dx;
 				item.force[1] += v*dy;
-			} else if ( n.hasChildren ) {
-				// recurse for more accurate calculation
-				float splitx = (x1+x2)/2;
-				float splity = (y1+y2)/2;
-				for ( int i=0; i<n.children.length; i++ ) {
-					if ( n.children[i] != null ) {
-						forceHelper(item, n.children[i],
-								(i==1||i==3?splitx:x1), (i>1?splity:y1),
-								(i==1||i==3?x2:splitx), (i>1?y2:splity));
-					}
-				}
-				if ( minDist ) return;
-				if ( n.value != null && n.value != item ) {
-					float v = params[GRAVITATIONAL_CONST]*item.mass*n.value.mass
-							/ (r*r*r);
-					item.force[0] += v*dx;
-					item.force[1] += v*dy;
-				}
 			}
-		} else {
 		}
-	}
-
-	public static boolean isOverlapping(ForceItem item1, ForceItem item2) {
-		double dx = item1.location[0] - item2.location[0];
-		double dy = item1.location[1] - item2.location[1];
-		double dr = Math.sqrt(dx * dx + dy * dy);
-		double width1 = item1.dimensions[0], width2 = item2.dimensions[0];
-		double height1 = item1.dimensions[1], height2 = item2.dimensions[1];
-		
-		double theta = Math.atan(dy / dx);
-		double vector = 0.0;
-
-		if(Math.abs(dy) > height1) 
-			vector = (height1 + height2) / Math.sin(theta);
-		else 
-			vector = (width1 + width2) / Math.cos(theta);
-
-		if(Math.abs(vector) < dr)
-			return true;
-		return false;
 	}
 
 	/**
