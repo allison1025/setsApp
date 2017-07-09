@@ -291,7 +291,8 @@ public class NBodyForce extends AbstractForce {
 			effectivedy = (float) (dy + (dy < 0 ? 1 : -1) * (item.dimensions[1] + n.value.dimensions[1]));
 			isOverlapping = (((dx > 0 && effectivedx < 0) || (dx < 0 && effectivedx > 0)) && 
 					((dy > 0 && effectivedy < 0) || (dy < 0 && effectivedy > 0)));
-			r = (float) (1 / (Math.sqrt(effectivedy * effectivedy + effectivedx * effectivedx) * 100 + 9500));
+			if(r > .05)
+				r = (float) (1 / (Math.sqrt(effectivedy * effectivedy + effectivedx * effectivedx) * 1000 + 10000));
 		}
         
         // the Barnes-Hut approximation criteria is if the ratio of the
