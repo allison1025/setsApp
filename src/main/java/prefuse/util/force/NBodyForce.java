@@ -292,8 +292,12 @@ public class NBodyForce extends AbstractForce {
 			// that means the shapes intersect
 			isOverlapping = (((dx > 0 && effectivedx < 0) || (dx < 0 && effectivedx > 0)) && 
 					((dy > 0 && effectivedy < 0) || (dy < 0 && effectivedy > 0)));
+			if(!isOverlapping)
+				r = (float)Math.sqrt(effectivedx * effectivedx + effectivedy * effectivedy);
+			System.out.println(dx + " is dx, " + effectivedx + " is effectivedx, " + 
+					dy + " is dy, " + effectivedy + " is effectivedy, " + isOverlapping);
 		}
-
+		
 		// the Barnes-Hut approximation criteria is if the ratio of the
 		// size of the quadtree box to the distance between the point and
 		// the box's center of mass is beneath some threshold theta.
