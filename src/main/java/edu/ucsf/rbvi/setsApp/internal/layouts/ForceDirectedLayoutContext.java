@@ -28,4 +28,7 @@ public class ForceDirectedLayoutContext {
   @Tunable(description="No overlapping nodes (y/n)", 
 		  tooltip="Increase node mass for less node overlap when this feature is enabled.")
   public boolean disableOverlapping = false;
+ 
+  @Tunable(description="Spring length for nodes in the same set")
+  public double overlapForce = 500.0;
 }

@@ -43,7 +43,7 @@ public class ForceDirectedLayoutTask extends AbstractTask {
 
 	public void run(final TaskMonitor monitor) {
 		final ForceSimulator sim = new ForceSimulator();
-		sim.addForce(new NBodyForce(settings.disableOverlapping));
+		sim.addForce(new NBodyForce(settings.disableOverlapping, (float)settings.overlapForce));
 		sim.addForce(new SpringForce());
 		sim.addForce(new DragForce());
 

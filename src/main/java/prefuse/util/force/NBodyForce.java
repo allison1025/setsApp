@@ -52,6 +52,7 @@ public class NBodyForce extends AbstractForce {
 	public static final int MIN_DISTANCE = 1;
 	public static final int BARNES_HUT_THETA = 2;
 	private boolean disableOverlapping = false;
+	private float overlapForce = 0f;
 
 	private float xMin, xMax, yMin, yMax;
 	private QuadTreeNodeFactory factory = new QuadTreeNodeFactory();
@@ -62,9 +63,10 @@ public class NBodyForce extends AbstractForce {
 	/**
 	 * Create a new NBodyForce with default parameters.
 	 */
-	public NBodyForce(boolean disableOverlapping) {
+	public NBodyForce(boolean disableOverlapping, float overlapForce) {
 		this(DEFAULT_GRAV_CONSTANT, DEFAULT_DISTANCE, DEFAULT_THETA);
 		this.disableOverlapping = disableOverlapping;
+		this.overlapForce = overlapForce;
 	}
 
 	/**
@@ -283,22 +285,16 @@ public class NBodyForce extends AbstractForce {
 			same = true;
 		}
 
-		float effectivedx = dx;
-		float effectivedy = dy;
+		float effectivedx = Math.abs(dx);
+		float effectivedy = Math.abs(dy);
 		float effectivedr = r;
 		boolean isOverlapping = false;
 
 		if(disableOverlapping)
 			if(n.value != item && n.value != null && item != null) {
-			effectivedx = (float) (dx + (dx < 0 ? 1 : -1) * 
-					(item.dimensions[0] + n.value.dimensions[0]));
-			effectivedy = (float) (dy + (dy < 0 ? 1 : -1) * 
-					(item.dimensions[1] + n.value.dimensions[1]));
-			isOverlapping = (((dx > 0 && effectivedx < 0) || (dx < 0 && effectivedx > 0)) && 
-					((dy > 0 && effectivedy < 0) || (dy < 0 && effectivedy > 0)));
-			if(r > 0.05)
-				effectivedr = (float)(Math.sqrt(effectivedy * effectivedy + 
-						effectivedx * effectivedx));
+			effectivedx = (float) (Math.abs(dx) - (item.dimensions[0] + n.value.dimensions[0]));
+			effectivedy = (float) (Math.abs(dy) - (item.dimensions[1] + n.value.dimensions[1]));
+			isOverlapping = (effectivedx < 0 && effectivedy < 0);
 			}
 
 		boolean minDist = params[MIN_DISTANCE]>0f && r>params[MIN_DISTANCE] && !isOverlapping;
@@ -314,13 +310,15 @@ public class NBodyForce extends AbstractForce {
 			// for Barnes-Hut approximation, so calc force
 			float v = params[GRAVITATIONAL_CONST]*item.mass*n.mass 
 					/ (r*r*r);
-			if(disableOverlapping) {
-				v += params[GRAVITATIONAL_CONST] * item.mass * n.mass * 
-						(isOverlapping && r > 0.05 ? r * r * r: 0);
-				v *= (effectivedr < 1 ? 10 : 1);
+			/*if(disableOverlapping)
+				v += params[GRAVITATIONAL_CONST] * item.mass * n.mass / 10000000;*/ 
+			if(isOverlapping) {
+				item.force[0] += (dx < 0 ? overlapForce : -overlapForce);
+				item.force[1] += (dy < 0 ? overlapForce : -overlapForce);
+			} else if(!isOverlapping) {
+				item.force[0] += v*dx;
+				item.force[1] += v*dy;
 			}
-			item.force[0] += v*(dx < 0 ? -1 * Math.abs(effectivedx) : Math.abs(effectivedx));
-			item.force[1] += v*(dy < 0 ? -1 * Math.abs(effectivedy) : Math.abs(effectivedy));
 		} else if ( n.hasChildren ) {
 			// recurse for more accurate calculation
 			float splitx = (x1+x2)/2;
@@ -336,13 +334,15 @@ public class NBodyForce extends AbstractForce {
 			if ( n.value != null && n.value != item ) {
 				float v = params[GRAVITATIONAL_CONST]*item.mass*n.value.mass
 						/ (r*r*r);
-				if(disableOverlapping) {
-					v += params[GRAVITATIONAL_CONST] * item.mass * n.value.mass * 
-							(isOverlapping && r > 0.05 ? r * r * r : 0);
-					v *= (effectivedr < 1 ? 10 : 1);
+				/*if(disableOverlapping)
+					v += params[GRAVITATIONAL_CONST] * item.mass * n.value.mass / 10000000; */
+				if(isOverlapping) {
+					item.force[0] += (dx < 0 ? overlapForce : -overlapForce);
+					item.force[1] += (dy < 0 ? overlapForce : -overlapForce);
+				} else if(!isOverlapping) {
+					item.force[0] += v*dx;
+					item.force[1] += v*dy;
 				}
-				item.force[0] += v*(dx < 0 ? -1 * Math.abs(effectivedx) : Math.abs(effectivedx));
-				item.force[1] += v*(dy < 0 ? -1 * Math.abs(effectivedy) : Math.abs(effectivedy));
 			}
 		}
 	}
