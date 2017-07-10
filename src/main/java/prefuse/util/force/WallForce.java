@@ -84,5 +84,4 @@ public class WallForce extends AbstractForce {
         if ( n[1] >= Math.min(y1,y2) && n[1] <= Math.max(y1,y2) )
             item.force[0] += -1*ccw*v*dy;
     }
-
 } // end of class WallForce

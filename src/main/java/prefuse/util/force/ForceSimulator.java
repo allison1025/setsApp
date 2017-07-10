@@ -19,6 +19,7 @@ public class ForceSimulator {
     private int iflen, sflen;
     private Integrator integrator;
     private float speedLimit = 1.0f;
+    private boolean disableOverlapping;
     
     /**
      * Create a new, empty ForceSimulator. A RungeKuttaIntegrator is used
